@@ -1,7 +1,9 @@
 # AutoCastle
 Hustle Castle auto arena AI
 
-Uses CNN to recognize squad power.
+Requires Hustle Castle to be installed on BlueStacks.
+
+This AI uses CNN to recognize squad power.
 
 Double click observe.py to run the AI, will collect images based on specified region of interest.
 
