@@ -88,7 +88,7 @@ def run_check():
         hwnd=check_window()
         rect=get_rect(hwnd,verbose=verbose)
         if not check_size(*rect):
-            adjust_size()
+            adjust_size(hwnd)
             continue
         return (hwnd,rect)
 
@@ -104,7 +104,7 @@ def check_window():
         keyboard.wait('esc')
         sys.exit()
     else:
-        return(hwnd)
+        return hwnd
 
 def check_size(x,y,w,h):
     if np.abs(w-desired_width)<size_moe and np.abs(h-desired_height)<size_moe:
@@ -124,7 +124,7 @@ def get_rect(hwnd,verbose=False):
         sys.stdout.flush()
     return (x,y,w,h)
 
-def adjust_size():
+def adjust_size(hwnd):
     print("Window size changed, resetting...")
     win32gui.MoveWindow(hwnd, 100, 100, desired_width, desired_height, True)
     time.sleep(2)
@@ -164,20 +164,33 @@ def read_roi(key):
     filt_chars=[img for img in characters if filter_chars(img)]
     
     if len(filt_chars)==0:
-        print("No number found in region of interest")
-        return()
+        #print("No number found in region of interest")
+        return None
     # "Normalized" characters
     norm_chars=[conform_size(char) for char in filt_chars]
     #for char in norm_chars:
     #    cv2.imshow("ABC",char)
     #    cv2.waitKey(0)
-
     pred_digits=recognizer.predict_classes(np.array(norm_chars),verbose=0)
     pred_chars=[str(x) for x in pred_digits]
     pred_str="".join(pred_chars)
     pred_num=int(pred_str)
-    print(pred_num)
-    sys.stdout.flush()
+    return pred_num
+
+def get_powers():
+    enemy_power=read_roi("enemy_power")
+    your_power=read_roi("your_power")
+    if enemy_power is None or your_power is None:
+        print("No squad power detected")
+        return
+    print("Your power: {}\tEnemy power: {}".format(your_power,enemy_power))
+    if your_power-enemy_power>20000:
+        print("Possible victory")
+    elif enemy_power>your_power:
+        print("Possible defeat")
+    else:
+        print("Outcome unsure")
+    print()
 
 def onoff():
     global running
@@ -213,7 +226,7 @@ if __name__ == '__main__':
         if running:
             hwnd,rect=run_check()
             update_capture(*rect)
-            read_roi("enemy_power")
+            get_powers()
         time.sleep(1)
  
 
